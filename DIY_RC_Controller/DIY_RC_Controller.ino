@@ -4,8 +4,15 @@
 //                                        by Addicore.com & Boffintronics
 //
 // Revision History:
-//       01-03-2020   ARM     Pre Release Version 0.5
-//       01-18-2020   ARM     Initial Release Version 1.0
+//       01-03-2020   ARM     Version 0.5   Pre Release 
+//       01-18-2020   ARM     Version 1.0   Initial Release 
+//       06-16-2020   ARM     Version 1.1   Changed loop timing to support receiver recorder 
+//
+//**********************************************************************************************************************
+//
+//      Arduino IDE Notes:
+//      1. When uploading to the RC Controller, Set Tools>Board: to "Arduino Pro or Pro Mini"
+//         and Tools>Processor: to "ATmega328P (5V, 16MHz)"
 //
 //**********************************************************************************************************************
 // Copyright (C) 2020  Boffintronics, LLC
@@ -98,7 +105,7 @@ void setup() {
   Serial.println("----------------------------------");
   Serial.println("Steve Koci's DIY Remote Controller");
   Serial.println("         by Addicore.com");
-  Serial.println("      Controller Version 1.0");
+  Serial.println("      Controller Version 1.1");
   Serial.println("----------------------------------");
 
   CheckEeprom();    // Check eeprom data and initilize if necessary
@@ -108,11 +115,17 @@ void setup() {
   }
 
   SetUpRadio(); // Setup Radio for transmit
-
 }
 
 //**********************************************************************************************************************
+unsigned long loopTime = millis();
+
 void loop() {
+
+  while (millis() < (loopTime + 33)) {
+  }
+
+  loopTime = millis();
 
   // Read analog inputs and place them in to the Data Package, int = 2 bytes per
   data.LjPotX = analogRead(L_JS_X);
@@ -142,12 +155,8 @@ void loop() {
     radio.openWritingPipe(pipes[NRFpipeIndex]);
   }
 
-  //String pipe = pipes[NRFpipeIndex];
-  //Serial.println (pipe);
-
   // Transmit data package
   radio.write(&data, sizeof(Data_Package));
-  //Serial.print("*");
 }
 //**********************************************************************************************************************
 
@@ -259,9 +268,9 @@ void ProgramMode(void) {
   ProgramTimeout = millis();
   NewCount = FlashCount;
 
-  
+
   if (Program == 2) {
-  Serial.print ("Mode = ");
+    Serial.print ("Mode = ");
     if (NewCount == 4) {
       Serial.println ("Multi Rx");
     } else {
@@ -272,12 +281,11 @@ void ProgramMode(void) {
     Serial.print (NewCount);
     Serial.print ("  ");
     Serial.println (NRFfrequencyTable[NewCount]);
-
   }
 
   while (1) {
 
-  if (millis() >= (ProgramTimeout + PROG_TIMOUT)) {   // program mode time out
+    if (millis() >= (ProgramTimeout + PROG_TIMOUT)) {   // program mode time out
       delay(1000);
       digitalWrite(PROG_LED, LED_ON);
       delay(1000);
@@ -401,7 +409,6 @@ void ProgramMode(void) {
 
       //--------------------------------------------------------------------------------------------------------------------
       // Rx mode program
-
       //--------------------------------------------------------------------------------------------------------------------
       // flash the current Rx mode on leds, 1 flash = single receiver, 4 flashes = 4 receivers
 
@@ -480,7 +487,6 @@ void ProgramMode(void) {
           } else {
             Serial.println("Single Rx");
           }
-
         }
         ButtonDownCount = 0;
       }
